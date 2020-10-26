@@ -16,26 +16,45 @@
       <fieldset>
         <label for="csvFileInput"> <strong>CSV File:</strong>
         </label>
-        <input type="file" id="csvFileInput" onchange="handleFiles(this.files)" accept=".csv">
+        <input type="file" id="csvFileInput" accept=".csv">
+        <!--  onchange="handleFiles(this.files)" -->
+
+      </fieldset>
+
+      <fieldset>
+        <label for="mySelect"> <strong>Type:</strong>
+        </label>
+        <select id="mySelect">
+          <option value="" selected disabled hidden>Choose here</option>
+          <option value="Apple">Apple</option>
+          <option value="Orange">Orange</option>
+          <option value="Pineapple">Pineapple</option>
+          <option value="Banana">Banana</option>
+        </select>
+      </fieldset>
+
+
+      <fieldset id="dynamic">
+
+      </fieldset>
+
+    </form>
   </div>
-  </fieldset>
-  </form>
   <div id="output">
   </div>
-  </div>
-  <br>
-  <br>
-  <footer>
-    <center>
-      <p>&copy; Mounir Messelmeni 2012</p>
-    </center>
-  </footer>
+  <pre id="result"></pre>
+  <button id="init" type="button" onclick="finalManupulation()">Try it</button>
+
 
   <!-- Le javascript
     ================================================== -->
   <!-- Placed at the end of the document so the pages load faster -->
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js"></script>
   <script type="text/javascript" src="js/papaparse.min.js"></script>
+  <script type="text/javascript" src="js/template.js"></script>
   <script type="text/javascript" src="js/read-csv.js"></script>
+  <script type="text/javascript" src="js/apiCall.js"></script>
+  <script type="text/javascript" src="js/url.js"></script>
 </body>
 
 </html>
