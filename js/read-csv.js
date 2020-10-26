@@ -1,59 +1,5 @@
-function handleFiles(files) {
-	// Check for the letious File API support.
-
-	if (window.FileReader) {
-		// FileReader are supported.
-
-		/* // File size limiting
-		let size = (files[0].size / 1024 / 1024).toFixed(2);
-		if (size > 4 || size < 2) {
-			alert("File must be between the size of 2-4 MB but here we have " + size + " MB");
-		} else {
-			alert("File size - " + size)
-		} */
-		var output = []
-		if (files.length) {
-			for (let i = 0; i < files.length; i++) {
-				let currFileContent = getAsText(files[i])
-				loadHandler(currFileContent, i)
-			}
-		} else {
-			return alert('Kindly upload the file...!')
-		}
-
-
-	} else {
-		alert('FileReader are not supported in this browser.');
-	}
-}
-
-function getAsText(fileToRead) {
-	let reader = new FileReader();
-	return new Promise((resolve, reject) => {
-		// Handle errors load
-		reader.onload = event => resolve(event)
-		reader.onerror = error => reject(errorHandler())
-
-		// Read file into memory as UTF-8   
-		reader.readAsText(fileToRead)
-	})
-
-	/* 	reader.onload = loadHandler;
-		reader.onerror = errorHandler;
-		reader.readAsText(fileToRead); */
-}
-
-function loadHandler(event, i) {
-	//Target file content found
-	let csv = event.target.result;
-
-	//Save encrypted content in Browser
-	let output = document.getElementById('output')
-	var enc = window.btoa(csv);
-	output.setAttribute("csv" + i, enc);
-}
-
-function confirmPrompt(promptContent) {
+/* function confirmPrompt(promptContent) {
+	//Broswer Panel Confirm Prompt 
 	if (confirm(promptContent)) {
 		// Pressed ok Return true
 		return true
@@ -61,63 +7,70 @@ function confirmPrompt(promptContent) {
 		// Pressed ok Return false
 		return false
 	}
-}
+} */
 
 
 function readFileAsync(file) {
 	return new Promise((resolve, reject) => {
+		//File read through broswer
 		let reader = new FileReader();
-
 		reader.onload = () => {
 			resolve(reader.result);
 		};
-
 		reader.onerror = reject;
-
 		reader.readAsArrayBuffer(file);
 	})
 }
 
 function arrayBufferToString(arrayBuffer, decoderType = 'utf-8') {
+	//decode arrayBuffer to string
 	let decoder = new TextDecoder(decoderType);
 	return decoder.decode(arrayBuffer);
 }
 
 function processFile(file) {
 	return new Promise(async (resolve, reject) => {
+		// file read and decode it to string 
 		try {
-			let arrayBuffer = await readFileAsync(file).then(function (data) {
-				return data
+			let fileContents = await readFileAsync(file).then(function (data) {
+				return arrayBufferToString(data);
 			}).catch((err) => { console.error(err); });
-			let currFileData = arrayBufferToString(arrayBuffer);
-			console.log('currFileData', currFileData)
-			resolve(currFileData)
+			resolve(fileContents)
 		} catch (err) {
 			console.log(err);
+			reject(err)
 		}
 	})
 
 }
 
 async function finalManupulation() {
+
 	let file = document.getElementById('csvFileInput');
 
 	let outputContents = []
 	if (file.files.length) {
 		for (let i = 0; i < file.files.length; i++) {
-			/* 			let currFileContent = getAsText(files[i])
-						loadHandler(currFileContent, i) */
-			let currContent = await processFile(file.files[i]);
+			// FileReader are supported.
+			// File size limiting
+			/* 
+			let size = (files[0].size / 1024 / 1024).toFixed(2);
+			if (size > 4 || size < 2) {
+				alert("File must be between the size of 2-4 MB but here we have " + size + " MB");
+			} else {
+				alert("File size - " + size)
+			} */
+			let currContent = await processFile(file.files[i]).catch((err) => { console.error(err); });;
 			outputContents.push(currContent)
 		}
 	} else {
-		return alert('Kindly upload the file...!')
+		return alertPrompt('Kindly upload the file...!')
 	}
-
-	console.log('outputContents', outputContents)
 
 	let updatedDataObj = {}
 	let userAcceptent = true
+
+	// multiple file hanling
 	/* 	let allAttr = document.getElementById('output').attributes
 		var allAttrNames = Object.value(fileContents)
 		let csvContentAttr = allAttrNames.filter(function (attrName) {
@@ -127,16 +80,14 @@ async function finalManupulation() {
 		}); */
 	for (let i = 0; i < outputContents.length; i++) {
 		let currData = outputContents[i]
-		/* 		let enc = document.getElementById('output').getAttribute(currData);
-				let csv = window.atob(enc); */
 		let csv = currData
 		let selectedType = document.getElementById("mySelect").value;
 		let promptContent = "Type is not mentioned, can we continue..!"
 		if (!csv) {
-			return alert('Kindly upload the file...!')
+			return alertPrompt('Kindly upload the file...!')
 		}
 		if (!selectedType) {
-			userAcceptent = confirmPrompt(promptContent)
+			userAcceptent = await confirmPrompt(promptContent)
 		}
 		if (userAcceptent) {
 			console.log('csv', csv)
@@ -184,7 +135,7 @@ async function finalManupulation() {
 
 function errorHandler(evt) {
 	if (evt.target.error.name == "NotReadableError") {
-		alert("Canno't read file !");
+		alertPrompt("Canno't read file !");
 	}
 }
 
@@ -225,6 +176,7 @@ function drawOutputAsObj(lines) {
 	//Clear previous data
 	document.getElementById("output").innerHTML = "";
 	let table = document.createElement("table");
+	table.setAttribute('class', 'table')
 
 	//for the table headings
 	let tableHeader = table.insertRow(-1);
@@ -246,20 +198,25 @@ function drawOutputAsObj(lines) {
 	document.getElementById("output").appendChild(table);
 }
 
-function drawDynamicMapping(updatedJson) {
+async function drawDynamicMapping(updatedJson) {
 	try {
 		if (updatedJson) {
-			/* 	let option = { url: urls.fetchFreshDeskFields }
-				console.log(httpFlow.fetchGet(option)) */
+			let option = { url: urls.fetchFreshDeskFields }
+			let apiResponse = await httpFlow.fetchGet(option)
+			let freshWorkFields = apiResponse.map(function (elm) {
+				return elm.name
+			})
 			document.getElementById('dynamic').innerHTML = ""
-			document.getElementById('init').remove();
-			let btnWrapper = document.createElement('div');
-			btnWrapper.innerHTML = '<button id="final" type="button" onclick="mapFlow()">Try it</button>'
-			document.getElementsByTagName('body')[0].appendChild(btnWrapper.getElementsByTagName('button')[0])
+			/* 			document.getElementById('init').remove();//mapFlow
+						let btnWrapper = document.createElement('div');
+						btnWrapper.innerHTML = '<button class="" id="final" type="button" onclick="mapFlow()">Try it</button>'
+						document.getElementsByTagName('body')[0].appendChild(btnWrapper.getElementsByTagName('button')[0]) */
+			document.getElementById('init').setAttribute('onclick', 'mapFlow()')
+			document.getElementById('init').setAttribute('id', 'final')
 			let selectables = Object.keys(updatedJson[0])
 			let selectTemplate = template.fullSectionWithLabel
 			let optionTemplate = template.option
-			let freshWorkFields = ['Ticket', 'Phone', 'tage3', 'tage4', 'tage5']
+			/* let freshWorkFields = ['Ticket', 'Phone', 'tage3', 'tage4', 'tage5'] */
 			let updatedMapperView = []
 			for (let i = 0; i < freshWorkFields.length; i++) {
 				let htmlString = selectTemplate
@@ -280,6 +237,11 @@ function drawDynamicMapping(updatedJson) {
 				updatedMapperView.push(selectWrapper)
 				document.getElementById('dynamic').appendChild(selectWrapper)
 			}
+			let mapWrapper = document.createElement('div');
+			mapWrapper.innerHTML = '<h4 class="col-sm-offset-2 col-sm-10">Mapping Between Fields: </h4>'
+
+			var mapper = document.getElementById("mapper");
+			mapper.insertBefore(mapWrapper, mapper.childNodes[0]);
 			/* 	let resetBtnWrapper = document.createElement('div');
 				resetBtnWrapper.innerHTML = '<button type="button" onclick="finalManupulation()">Reset</button>'
 				document.getElementsByTagName('form')[0].appendChild(resetBtnWrapper.getElementsByTagName('button')[0]) */
@@ -312,30 +274,34 @@ function mapFlow() {
 
 		duplicateArr = findDuplicates(valueArr)
 
-		for (let i = 0; i < arrOfSelect.length; i++) {
-			if (arrOfSelect[i].value) {
-				csv = csv.map(function (obj) {
-					//obj[arrOfSelect[i].getAttribute('id')] = obj[arrOfSelect[i].value]; // Assign new key 
-					if (arrOfSelect[i].getAttribute('id').toLowerCase() == arrOfSelect[i].parentElement.children[0].getAttribute('for').toLocaleLowerCase()) {
-						sameFieldMapp.push(arrOfSelect[i].getAttribute('id').toLowerCase())
-						return obj;
-					}
-				});
-			}
-		}
+		/* 	for (let i = 0; i < arrOfSelect.length; i++) {
+				if (arrOfSelect[i].value) {
+					csv = csv.map(function (obj) {
+						//obj[arrOfSelect[i].getAttribute('id')] = obj[arrOfSelect[i].value]; // Assign new key 
+						if (arrOfSelect[i].getAttribute('id').toLowerCase() == arrOfSelect[i].parentElement.children[0].getAttribute('for').toLocaleLowerCase()) {
+							sameFieldMapp.push(arrOfSelect[i].getAttribute('id').toLowerCase())
+							return obj;
+						}
+					});
+				}
+			} */
 
 		if (sameFieldMapp.length) {
-			alert('same value mapped with same fileds ' + sameFieldMapp.join())
+			alertPrompt('same value mapped with same fileds ' + sameFieldMapp.join())
 		} else {
 			if (duplicateArr.length > 0) {
-				alert('same value mapped with different fileds ' + duplicateArr.join())
+				alertPrompt('same value mapped with different fileds: ' + '<strong>' + duplicateArr.join() + '</strong>')
 			} else {
 				for (let i = 0; i < arrOfSelect.length; i++) {
 					if (arrOfSelect[i].value) {
 						csv = csv.map(function (obj) {
-							obj[arrOfSelect[i].getAttribute('id')] = obj[arrOfSelect[i].value]; // Assign new key 
-							delete obj[arrOfSelect[i].value]; // Delete old key 
-							return obj;
+							if (arrOfSelect[i].getAttribute('id').toLocaleLowerCase() == arrOfSelect[i].value.toLocaleLowerCase()) {
+								return obj;
+							} else {
+								obj[arrOfSelect[i].getAttribute('id')] = obj[arrOfSelect[i].value]; // Assign new key 
+								delete obj[arrOfSelect[i].value]; // Delete old key 
+								return obj;
+							}
 						});
 					}
 				}
@@ -366,3 +332,44 @@ function findDuplicates(arr) {
 	return results;
 }
 
+function alertPrompt(params) {
+	try {
+		$.alert({
+			title: 'Alert!',
+			content: params,
+			useBootstrap: true // Key line
+		});
+	} catch (error) {
+		console.log(error)
+	}
+}
+
+function confirmPrompt(params) {
+	return new Promise((resolve, reject) => {
+		try {
+			$.confirm({
+				title: 'Confirm!',
+				content: params,
+				buttons: {
+					confirm: function () {
+						resolve(true)
+					},
+					cancel: function () {
+						resolve(false)
+					}
+				},
+				useBootstrap: true // Key line
+			});
+		} catch (error) {
+			console.log(error)
+		}
+	})
+}
+
+function restPage(params) {
+	try {
+		window.location.reload()
+	} catch (error) {
+		console.log(error)
+	}
+}

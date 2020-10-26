@@ -42,14 +42,34 @@ var httpFlow = (function () {
     }
 
     async function fetchGet(options) {
-        let response = await fetch(options.url)
+        document.getElementById("loader").style.display = "block";
+        var myHeaders = new Headers();
+        myHeaders.append("Authorization", "VVZzRVFSRDB6Q2ExcUlTNVlHOWc=:X");
+        myHeaders.append("Content-Type", "application/json");
+        myHeaders.append("Cookie", "_x_w=38_2; _x_m=x_c");
 
-        if (response.ok) { // if HTTP-status is 200-299
-            // get the response body (the method explained below)
-            return response
-        } else {
-            return (response.status);
-        }
+        var requestOptions = {
+            method: 'GET',
+            headers: myHeaders,
+            redirect: 'follow'
+        };
+
+        /* let responseData = await fetch(options.url, requestOptions).then(function (response) {
+            console.log('responseData', response)
+            if (response.ok) {
+                return response.json()
+            } else {
+                return (response.status);
+            }
+        }).catch((err) => { console.error(err); }); */
+
+        let responseData = await fetch(options.url, requestOptions).then(function (response) {
+            document.getElementById("loader").style.display = "none";
+            return response.json()
+        }).catch(error => console.log('error', error));
+
+        return responseData
+
     }
 
     async function fetchPost(options) {
