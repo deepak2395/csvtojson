@@ -42,7 +42,7 @@ var httpFlow = (function () {
     }
 
     async function fetchGet(options) {
-        document.getElementById("loader").style.display = "block";
+        document.getElementById("cover-spin").style.display = "block";
         var myHeaders = new Headers();
         myHeaders.append("Authorization", "VVZzRVFSRDB6Q2ExcUlTNVlHOWc=:X");
         myHeaders.append("Content-Type", "application/json");
@@ -64,7 +64,7 @@ var httpFlow = (function () {
         }).catch((err) => { console.error(err); }); */
 
         let responseData = await fetch(options.url, requestOptions).then(function (response) {
-            document.getElementById("loader").style.display = "none";
+            document.getElementById("cover-spin").style.display = "none";
             return response.json()
         }).catch(error => console.log('error', error));
 

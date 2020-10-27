@@ -1,14 +1,13 @@
-/* function confirmPrompt(promptContent) {
-	//Broswer Panel Confirm Prompt 
-	if (confirm(promptContent)) {
-		// Pressed ok Return true
-		return true
-	} else {
-		// Pressed ok Return false
-		return false
-	}
-} */
+/* **************************************** */
+/* **************************************** */
 
+/* App_Name: CSV file handling,
+Version 1.0.0,
+Latest_Update : 27-10-2020
+Latest_modifier : Deepak */
+
+/* **************************************** */
+/* **************************************** */
 
 function readFileAsync(file) {
 	return new Promise((resolve, reject) => {
@@ -199,8 +198,10 @@ function drawOutputAsObj(lines) {
 }
 
 async function drawDynamicMapping(updatedJson) {
+	// creating dynamic fields based on freshwork api 
 	try {
 		if (updatedJson) {
+			// freshwork api call
 			let option = { url: urls.fetchFreshDeskFields }
 			let apiResponse = await httpFlow.fetchGet(option)
 			let freshWorkFields = apiResponse.map(function (elm) {
@@ -257,6 +258,7 @@ async function drawDynamicMapping(updatedJson) {
 }
 
 function mapFlow() {
+	//mapping functionality field name change based on mapping
 	try {
 		let options = {}
 		let enc = document.getElementById('output').getAttribute('csvJson');
@@ -333,6 +335,7 @@ function findDuplicates(arr) {
 }
 
 function alertPrompt(params) {
+	// broswer alert panel
 	try {
 		$.alert({
 			title: 'Alert!',
@@ -345,6 +348,7 @@ function alertPrompt(params) {
 }
 
 function confirmPrompt(params) {
+	// Broswer confirmation panel
 	return new Promise((resolve, reject) => {
 		try {
 			$.confirm({
