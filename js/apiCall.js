@@ -54,18 +54,13 @@ var httpFlow = (function () {
             redirect: 'follow'
         };
 
-        /* let responseData = await fetch(options.url, requestOptions).then(function (response) {
-            console.log('responseData', response)
+        let responseData = await fetch(options.url, requestOptions).then(function (response) {
+            document.getElementById("cover-spin").style.display = "none";
             if (response.ok) {
                 return response.json()
             } else {
-                return (response.status);
+                return response.status
             }
-        }).catch((err) => { console.error(err); }); */
-
-        let responseData = await fetch(options.url, requestOptions).then(function (response) {
-            document.getElementById("cover-spin").style.display = "none";
-            return response.json()
         }).catch(error => console.log('error', error));
 
         return responseData
@@ -73,16 +68,20 @@ var httpFlow = (function () {
     }
 
     async function fetchPost(options) {
+        document.getElementById("cover-spin").style.display = "block";
+        var myHeaders = new Headers();
+        myHeaders.append("Authorization", "VVZzRVFSRDB6Q2ExcUlTNVlHOWc=:X");
+        myHeaders.append("Content-Type", "application/json");
+        myHeaders.append("Cookie", "_x_w=38_2; _x_m=x_c");
         let response = fetch(options.url, {
-            method: 'post',
-            headers: {
-                "Content-type": "application/json; charset=UTF-8"
-            },
-            /*  headers: new Headers(), */
+            method: 'POST',
+            headers: myHeaders,
+            redirect: 'follow',
             body: options.data
         })
             .then(json)
             .then(function (data) {
+                document.getElementById("cover-spin").style.display = "none";
                 console.log('Request succeeded with JSON response', data);
             })
             .catch(function (error) {

@@ -251,7 +251,7 @@ async function drawDynamicMapping(updatedJson) {
 				resetBtnWrapper.innerHTML = '<button type="button" onclick="finalManupulation()">Reset</button>'
 				document.getElementsByTagName('form')[0].appendChild(resetBtnWrapper.getElementsByTagName('button')[0]) */
 			document.getElementsByClassName("notReq").outerHTML = document.getElementsByClassName("notReq").innerHTML
-			console.log('updatedMapperView', updatedMapperView)
+			//console.log('updatedMapperView', updatedMapperView)
 		} else {
 			console.log('Oops, Something Worng....!')
 		}
@@ -311,9 +311,15 @@ function mapFlow() {
 						});
 					}
 				}
+
+				/* //DB update need be done here -- Bussiness logic 1
 				options.url = urls.fetchFreshDeskFields
-				console.log(options, 'option')
-				/* httpFlow.get(options) */
+				options = {
+					url: urls.fetchFreshDeskFields,
+					data: csv
+				}
+				let apiResponse = await httpFlow.fetchPost(option) */
+				console.log('Mapped Result', csv)
 				drawOutputAsObj(csv)
 			}
 		}
