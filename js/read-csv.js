@@ -80,14 +80,14 @@ async function finalManupulation() {
 	for (let i = 0; i < outputContents.length; i++) {
 		let currData = outputContents[i]
 		let csv = currData
-		let selectedType = document.getElementById("mySelect").value;
-		let promptContent = "Type is not mentioned, can we continue..!"
+		/* let selectedType = document.getElementById("mySelect").value;
+		let promptContent = "Type is not mentioned, can we continue..!" */
 		if (!csv) {
 			return alertPrompt('Kindly upload the file...!')
 		}
-		if (!selectedType) {
-			userAcceptent = await confirmPrompt(promptContent)
-		}
+		/* 		if (!selectedType) {
+					userAcceptent = await confirmPrompt(promptContent)
+				} */
 		if (userAcceptent) {
 			console.log('csv', csv)
 			let csvObj = Papa.parse(csv, { header: true })
@@ -103,7 +103,7 @@ async function finalManupulation() {
 				for (let i = 0; i < errRowNumb.length; i++) {
 					arrayOfData.splice(errRowNumb[i], 1)
 				}
-				if (selectedType) {
+				/* if (selectedType) {
 					updatedDataObj = arrayOfData.map(function (elem) {
 						return {
 							...elem,
@@ -112,7 +112,8 @@ async function finalManupulation() {
 					});
 				} else {
 					updatedDataObj = arrayOfData
-				}
+				} */
+				updatedDataObj = arrayOfData
 				console.log(updatedDataObj)
 				drawOutputAsObj(updatedDataObj)
 				drawDynamicMapping(updatedDataObj)
@@ -202,10 +203,13 @@ async function drawDynamicMapping(updatedJson) {
 	try {
 		if (updatedJson) {
 			// freshwork api call
+			let ignoreFields = ['Subject', 'Description', 'Source']
 			let option = { url: urls.fetchFreshDeskFields }
 			let apiResponse = await httpFlow.fetchGet(option)
-			let freshWorkFields = apiResponse.map(function (elm) {
-				return elm.name
+			let freshWorkFields = apiResponse.filter(function (obj) {
+				return !ignoreFields.includes(obj.label_for_customers)
+			}).map(function (elm) {
+				return elm.label_for_customers
 			})
 			document.getElementById('dynamic').innerHTML = ""
 			/* 			document.getElementById('init').remove();//mapFlow
