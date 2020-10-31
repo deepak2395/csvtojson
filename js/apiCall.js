@@ -90,12 +90,88 @@ var httpFlow = (function () {
         return response
     }
 
+    async function fetchPut(options) {
+        document.getElementById("cover-spin").style.display = "block";
+        var myHeaders = new Headers();
+        myHeaders.append("Authorization", "VVZzRVFSRDB6Q2ExcUlTNVlHOWc=:X");
+        myHeaders.append("Content-Type", "application/json");
+        myHeaders.append("Cookie", "_x_w=38_2; _x_m=x_c");
+        let apiResponse = fetch(options.url, {
+            method: 'PUT',
+            headers: myHeaders,
+            redirect: 'follow',
+            body: options.data
+        })
+            .then(function (response) {
+                document.getElementById("cover-spin").style.display = "none";
+                console.log('Request succeeded with JSON response', response);
+                if (response.ok) {
+                    return response.json()
+                } else {
+                    return response.status
+                }
+            })
+            .catch(function (error) {
+                return error
+            });
+        return apiResponse
+    }
+
+
+    async function fetchPromiseAll(options) {
+        document.getElementById("cover-spin").style.display = "block";
+        /*         var myHeaders = new Headers();
+                myHeaders.append("Authorization", "VVZzRVFSRDB6Q2ExcUlTNVlHOWc=:X");
+                myHeaders.append("Content-Type", "application/json");
+                myHeaders.append("Cookie", "_x_w=38_2; _x_m=x_c");
+                let apiResponse = fetch(options.url, {
+                    method: 'PUT',
+                    headers: myHeaders,
+                    redirect: 'follow',
+                    body: options.data
+                }) */
+
+
+        /*    var myHeaders = new Headers();
+           myHeaders.append("Authorization", "VVZzRVFSRDB6Q2ExcUlTNVlHOWc=:X");
+           myHeaders.append("Content-Type", "application/json");
+           myHeaders.append("Cookie", "_x_w=38_2; _x_m=x_c");
+   
+           var raw = options.data
+   
+           var requestOptions = {
+               method: 'PUT',
+               headers: myHeaders,
+               body: raw,
+               redirect: 'follow'
+           };
+    */
+
+        var myHeaders = new Headers();
+        myHeaders.append("Authorization", "VVZzRVFSRDB6Q2ExcUlTNVlHOWc=:X");
+        myHeaders.append("Content-Type", "application/json");
+        myHeaders.append("Cookie", "_x_w=38_2; _x_m=x_c");
+
+        var raw = JSON.stringify(options.data);
+
+        var requestOptions = {
+            method: options.method,
+            headers: myHeaders,
+            body: raw,
+            redirect: 'follow'
+        };
+        let apiResponse = fetch(options.url, requestOptions).catch(error => error);
+        return apiResponse
+    }
+
+
 
 
     return {
         get: get,
         post: post,
         fetchGet: fetchGet,
-        fetchPost: fetchPost
+        fetchPost: fetchPost,
+        fetchPromiseAll: fetchPromiseAll
     }
 })();

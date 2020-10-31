@@ -203,11 +203,12 @@ async function drawDynamicMapping(updatedJson) {
 	try {
 		if (updatedJson) {
 			// freshwork api call
-			let ignoreFields = ['Subject', 'Description', 'Source']
+			let reqFields = ['Subject', 'Description', 'Source', 'Type']
+			//let ignoreFields = ['Subject', 'Description', 'Source']
 			let option = { url: urls.fetchFreshDeskFields }
 			let apiResponse = await httpFlow.fetchGet(option)
 			let freshWorkFields = apiResponse.filter(function (obj) {
-				return !ignoreFields.includes(obj.label_for_customers)
+				return reqFields.includes(obj.label_for_customers)
 			}).map(function (elm) {
 				return elm.label_for_customers
 			})
@@ -261,7 +262,7 @@ async function drawDynamicMapping(updatedJson) {
 	}
 }
 
-function mapFlow() {
+async function mapFlow() {
 	//mapping functionality field name change based on mapping
 	try {
 		let options = {}
@@ -284,7 +285,7 @@ function mapFlow() {
 				if (arrOfSelect[i].value) {
 					csv = csv.map(function (obj) {
 						//obj[arrOfSelect[i].getAttribute('id')] = obj[arrOfSelect[i].value]; // Assign new key 
-						if (arrOfSelect[i].getAttribute('id').toLowerCase() == arrOfSelect[i].parentElement.children[0].getAttribute('for').toLocaleLowerCase()) {
+						if (arrOfSelect[i].getAttribute('id').toLowerCase() == arrOfSelect[i].parentElement.children[0].getAttribute('for').toLowerCase()) {
 							sameFieldMapp.push(arrOfSelect[i].getAttribute('id').toLowerCase())
 							return obj;
 						}
@@ -301,7 +302,7 @@ function mapFlow() {
 				for (let i = 0; i < arrOfSelect.length; i++) {
 					if (arrOfSelect[i].value) {
 						csv = csv.map(function (obj) {
-							if (arrOfSelect[i].getAttribute('id').toLocaleLowerCase() == arrOfSelect[i].value.toLocaleLowerCase()) {
+							if (arrOfSelect[i].getAttribute('id').toLowerCase() == arrOfSelect[i].value.toLowerCase()) {
 								return obj;
 							} else {
 								obj[arrOfSelect[i].getAttribute('id')] = obj[arrOfSelect[i].value]; // Assign new key 
@@ -312,21 +313,74 @@ function mapFlow() {
 					}
 				}
 
-				/* //DB update need be done here -- Bussiness logic 1
-				options.url = urls.fetchFreshDeskFields
-				options = {
-					url: urls.fetchFreshDeskFields,
-					data: csv
+
+				//DB update need be done here -- Bussiness logic 1
+				let requests = csv.map(async obj => {
+					/* let objKeys = Object.keys(obj) */
+					var key, keys = Object.keys(obj);
+					var n = keys.length;
+					var newobj = {}
+					while (n--) {
+						key = keys[n];
+						newobj[key.toLowerCase()] = obj[key];
+					}
+					/* 	let lowerCaseKeys = objKeys.map(key => {
+							return key.toLowerCase()
+						}) */
+					let reqData = {}
+					let reqFields = ['subject', 'description', 'source', 'type']
+					for (let i = 0; i < reqFields.length; i++) {
+						if (newobj[reqFields[i]]) {
+							reqData[reqFields[i]] = newobj[reqFields[i]]
+						}
+					}
+					options = {
+						url: urls.fetchFreshUpdateFields + "/" + newobj['token'],
+						method: 'PUT',
+						data: reqData
+					}
+					return httpFlow.fetchPromiseAll(options)
+				});
+
+				let outputsResponse = []
+				let successResponse = []
+				let errResponse = []
+				let successToken = []
+				let failureToken = []
+				await Promise.all(requests)
+					.then(jsonResponses => {
+						jsonResponses.forEach(jsonResponse => {
+							outputsResponse.push(jsonResponse)
+							if (jsonResponse.status != 200) {
+								errResponse.push(jsonResponse)
+								failureToken.push(jsonResponse.url.split('tickets/')[1])
+							} else {
+								successResponse.push(jsonResponse)
+								successToken.push(jsonResponse.url.split('tickets/')[1])
+							}
+						})
+						let trueFields = jsonResponses.filter(function (obj) {
+							return obj.status == 200
+						})
+						return trueFields
+					})
+					.then(results => results.forEach(result => console.log('result', result)));
+				document.getElementById("cover-spin").style.display = "none";
+				console.log('apiResponse', outputsResponse)
+				console.log('errResponse', errResponse)
+				if (requests.length == successToken.length) {
+					alertPrompt('All Tickets Success')
+				} else {
+					alertPrompt('Success Tickets: ' + successToken.join() + ',' + '\nFailure Tickets: ' + failureToken.join())
 				}
-				let apiResponse = await httpFlow.fetchPost(option) */
-				console.log('Mapped Result', csv)
+
 				drawOutputAsObj(csv)
 			}
 		}
 
 
 	} catch (error) {
-
+		console.log('error', error)
 	}
 }
 
