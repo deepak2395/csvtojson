@@ -116,18 +116,44 @@ async function finalManupulation() {
 				updatedDataObj = arrayOfData
 				console.log(updatedDataObj)
 				drawOutputAsObj(updatedDataObj)
-				drawDynamicMapping(updatedDataObj)
 
-				let output = document.getElementById('output')
-				var enc = window.btoa(JSON.stringify(updatedDataObj));
-				output.setAttribute('csvJson', enc)
+				let newobj = jsonKeyLowerCase(updatedDataObj[0])
 
+				let csvObjKeysLowercase = Object.keys(newobj)
+				let isCsvHasTicket = true
+				if (!csvObjKeysLowercase.includes('tickets')) {
+					//	await alertPrompt("Ticket field missing.")
+					isCsvHasTicket = await confirmPrompt("Ticket field missing. Can we continue?")
+				}
+
+				if (isCsvHasTicket) {
+					drawDynamicMapping(updatedDataObj)
+					let output = document.getElementById('output')
+					var enc = window.btoa(JSON.stringify(updatedDataObj));
+					output.setAttribute('csvJson', enc)
+				}
 			} else {
 				console.log('no rows found')
 			}
 		} else {
 
 		}
+	}
+
+}
+
+function jsonKeyLowerCase(jsonObj) {
+	try {
+		var key, keys = Object.keys(jsonObj);
+		var n = keys.length;
+		var newobj = {}
+		while (n--) {
+			key = keys[n];
+			newobj[key.toLowerCase()] = jsonObj[key];
+		}
+		return newobj
+	} catch (error) {
+
 	}
 
 }
@@ -313,20 +339,17 @@ async function mapFlow() {
 					}
 				}
 
+				let newobj = jsonKeyLowerCase(csv[0])
+
+				let csvObjKeysLowercase = Object.keys(newobj)
+				if (!csvObjKeysLowercase.includes('tickets')) {
+					return await alertPrompt("Ticket field missing.")
+					//isCsvHasTicket = await confirmPrompt("Ticket field missing. Can we continue?")
+				}
 
 				//DB update need be done here -- Bussiness logic 1
 				let requests = csv.map(async obj => {
-					/* let objKeys = Object.keys(obj) */
-					var key, keys = Object.keys(obj);
-					var n = keys.length;
-					var newobj = {}
-					while (n--) {
-						key = keys[n];
-						newobj[key.toLowerCase()] = obj[key];
-					}
-					/* 	let lowerCaseKeys = objKeys.map(key => {
-							return key.toLowerCase()
-						}) */
+					let newobj = jsonKeyLowerCase(obj)
 					let reqData = {}
 					let reqFields = ['subject', 'description', 'source', 'type']
 					for (let i = 0; i < reqFields.length; i++) {
@@ -335,7 +358,7 @@ async function mapFlow() {
 						}
 					}
 					options = {
-						url: urls.fetchFreshUpdateFields + "/" + newobj['token'],
+						url: urls.fetchFreshUpdateFields + "/" + newobj['tickets'],
 						method: 'PUT',
 						data: reqData
 					}
